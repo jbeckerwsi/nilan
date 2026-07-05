@@ -53,6 +53,10 @@ class Device:
         self._attributes = {}
         self._air_geo_type = 0
 
+    async def async_close(self):
+        """Close modbus connection."""
+        await self._modbus.async_close()
+
     async def setup(self):
         """Modbus and attribute map setup for Nilan Device."""
         _LOGGER.debug("Setup has started")
@@ -263,15 +267,13 @@ class Device:
                         char2 = chr(value & 0x00FF)
                         version += char1 + char2 + "."
                     version = version.replace(" ", "")
-                    version = version[:-1]
-                    return version
+                    return version[:-1]
             elif result is not None:
                 for value in result.registers:
                     char1 = chr(value & 0x00FF)
                     char2 = chr(value >> 8)
                     version += char1 + char2
-                version = version.replace(" ", "")
-                return version
+                return version.replace(" ", "")
         _LOGGER.error("Could not read get_controller_software_version")
         return None
 
@@ -1625,12 +1627,11 @@ class Device:
             self._unit_id, CTS602HoldingRegisters.control_mode_set, 1, "holding"
         )
         if result is not None:
-            value = int.from_bytes(
+            return int.from_bytes(
                 result.registers[0].to_bytes(2, "little", signed=False),
                 "little",
                 signed=False,
             )
-            return value
         _LOGGER.error("Could not read get_operation_mode")
         return None
 
@@ -1640,12 +1641,11 @@ class Device:
             self._unit_id, CTS602HoldingRegisters.preheat_defrost, 1, "holding"
         )
         if result is not None:
-            value = int.from_bytes(
+            return int.from_bytes(
                 result.registers[0].to_bytes(2, "little", signed=False),
                 "little",
                 signed=False,
             )
-            return value
         _LOGGER.error("Could not read get_pre_heater_defrost_select")
         return None
 
@@ -1655,12 +1655,11 @@ class Device:
             self._unit_id, CTS602HoldingRegisters.preheat_temp_set, 1, "holding"
         )
         if result is not None:
-            value = int.from_bytes(
+            return int.from_bytes(
                 result.registers[0].to_bytes(2, "little", signed=False),
                 "little",
                 signed=False,
             )
-            return value
         _LOGGER.error("Could not read get_pre_heater_temp_set")
         return None
 
@@ -1673,12 +1672,11 @@ class Device:
             "holding",
         )
         if result is not None:
-            value = int.from_bytes(
+            return int.from_bytes(
                 result.registers[0].to_bytes(2, "little", signed=False),
                 "little",
                 signed=False,
             )
-            return value
         _LOGGER.error("Could not read get_high_humidity_step")
         return None
 
@@ -1691,13 +1689,114 @@ class Device:
             "holding",
         )
         if result is not None:
-            value = int.from_bytes(
+            return int.from_bytes(
                 result.registers[0].to_bytes(2, "little", signed=False),
                 "little",
                 signed=False,
             )
-            return value
         _LOGGER.error("Could not read get_max_high_humidity_vent_time")
+        return None
+
+    async def get_user_function_1_time(self) -> int:
+        """Get time in user function 1 in m."""
+        result = await self._modbus.async_pb_call(
+            self._unit_id,
+            CTS602HoldingRegisters.program_user_time_set,
+            1,
+            "holding",
+        )
+        if result is not None:
+            return int.from_bytes(
+                result.registers[0].to_bytes(2, "little", signed=False),
+                "little",
+                signed=False,
+            )
+        _LOGGER.error("Could not read get_user_function_1_time")
+        return None
+
+    async def get_user_function_2_time(self) -> int:
+        """Get time in user function 2 in m."""
+        result = await self._modbus.async_pb_call(
+            self._unit_id,
+            CTS602HoldingRegisters.program_user_2_time_set,
+            1,
+            "holding",
+        )
+        if result is not None:
+            return int.from_bytes(
+                result.registers[0].to_bytes(2, "little", signed=False),
+                "little",
+                signed=False,
+            )
+        _LOGGER.error("Could not read get_user_function_2_time")
+        return None
+
+    async def get_user_function_1_temperature(self) -> int:
+        """Get user function 1 temperature."""
+        result = await self._modbus.async_pb_call(
+            self._unit_id,
+            CTS602HoldingRegisters.program_user_temp_set,
+            1,
+            "holding",
+        )
+        if result is not None:
+            return int.from_bytes(
+                result.registers[0].to_bytes(2, "little", signed=False),
+                "little",
+                signed=False,
+            )
+        _LOGGER.error("Could not read get_user_function_1_temperature")
+        return None
+
+    async def get_user_function_2_temperature(self) -> int:
+        """Get user function 2 temperature."""
+        result = await self._modbus.async_pb_call(
+            self._unit_id,
+            CTS602HoldingRegisters.program_user_2_temp_set,
+            1,
+            "holding",
+        )
+        if result is not None:
+            return int.from_bytes(
+                result.registers[0].to_bytes(2, "little", signed=False),
+                "little",
+                signed=False,
+            )
+        _LOGGER.error("Could not read get_user_function_2_temperature")
+        return None
+
+    async def get_user_function_1_offset(self) -> int:
+        """Get user function 1 offset."""
+        result = await self._modbus.async_pb_call(
+            self._unit_id,
+            CTS602HoldingRegisters.program_user_offs_set,
+            1,
+            "holding",
+        )
+        if result is not None:
+            return int.from_bytes(
+                result.registers[0].to_bytes(2, "little", signed=False),
+                "little",
+                signed=True,
+            )
+        _LOGGER.error("Could not read get_user_function_1_offset")
+        return None
+
+    async def get_user_function_2_offset(self) -> int:
+        """Get user function 2 offset."""
+        result = await self._modbus.async_pb_call(
+            self._unit_id,
+            CTS602HoldingRegisters.program_user_2_offs_set,
+            1,
+            "holding",
+        )
+        if result is not None:
+            return int.from_bytes(
+                result.registers[0].to_bytes(2, "little", signed=False),
+                "little",
+                signed=True,
+            )
+        _LOGGER.error("Could not read get_user_function_2_offset")
         return None
 
     async def get_supply_heating_pid_time(self) -> int:
@@ -1709,12 +1808,11 @@ class Device:
             "holding",
         )
         if result is not None:
-            value = int.from_bytes(
+            return int.from_bytes(
                 result.registers[0].to_bytes(2, "little", signed=False),
                 "little",
                 signed=False,
             )
-            return value
         _LOGGER.error("Could not read get_supply_heating_pid_time")
         return None
 
@@ -1727,12 +1825,11 @@ class Device:
             "holding",
         )
         if result is not None:
-            value = int.from_bytes(
+            return int.from_bytes(
                 result.registers[0].to_bytes(2, "little", signed=False),
                 "little",
                 signed=False,
             )
-            return value
         _LOGGER.error("Could not read get_minimum_defrost_time")
         return None
 
@@ -1745,12 +1842,11 @@ class Device:
             "holding",
         )
         if result is not None:
-            value = int.from_bytes(
+            return int.from_bytes(
                 result.registers[0].to_bytes(2, "little", signed=False),
                 "little",
                 signed=False,
             )
-            return value
         _LOGGER.error("Could not read get_maximum_outlet_defrost_time")
         return None
 
@@ -1763,12 +1859,11 @@ class Device:
             "holding",
         )
         if result is not None:
-            value = int.from_bytes(
+            return int.from_bytes(
                 result.registers[0].to_bytes(2, "little", signed=False),
                 "little",
                 signed=False,
             )
-            return value
         _LOGGER.error("Could not read get_maximum_compressor_defrost_time")
         return None
 
@@ -1781,12 +1876,11 @@ class Device:
             "holding",
         )
         if result is not None:
-            value = int.from_bytes(
+            return int.from_bytes(
                 result.registers[0].to_bytes(2, "little", signed=False),
                 "little",
                 signed=False,
             )
-            return value
         _LOGGER.error("Could not read get_time_between_defrost")
         return None
 
@@ -1799,12 +1893,11 @@ class Device:
             "holding",
         )
         if result is not None:
-            value = int.from_bytes(
+            return int.from_bytes(
                 result.registers[0].to_bytes(2, "little", signed=False),
                 "little",
                 signed=False,
             )
-            return value
         _LOGGER.error("Could not read get_compressor_stop_time")
         return None
 
@@ -1817,12 +1910,11 @@ class Device:
             "holding",
         )
         if result is not None:
-            value = int.from_bytes(
+            return int.from_bytes(
                 result.registers[0].to_bytes(2, "little", signed=False),
                 "little",
                 signed=False,
             )
-            return value
         _LOGGER.error("Could not read get_hmi_language")
         return None
 
@@ -1835,12 +1927,11 @@ class Device:
             "holding",
         )
         if result is not None:
-            value = int.from_bytes(
+            return int.from_bytes(
                 result.registers[0].to_bytes(2, "little", signed=False),
                 "little",
                 signed=False,
             )
-            return value
         _LOGGER.error("Could not read get_circulation_pump_mode")
         return None
 
@@ -1853,12 +1944,11 @@ class Device:
             "holding",
         )
         if result is not None:
-            value = int.from_bytes(
+            return int.from_bytes(
                 result.registers[0].to_bytes(2, "little", signed=False),
                 "little",
                 signed=True,
             )
-            return value
         _LOGGER.error("Could not read get_low_humidity_step")
         return None
 
@@ -1868,12 +1958,11 @@ class Device:
             self._unit_id, CTS602HoldingRegisters.air_qual_type, 1, "holding"
         )
         if result is not None:
-            value = int.from_bytes(
+            return int.from_bytes(
                 result.registers[0].to_bytes(2, "little", signed=False),
                 "little",
                 signed=True,
             )
-            return value
         _LOGGER.error("Could not read get_air_quality_control_type")
         return None
 
@@ -1886,12 +1975,11 @@ class Device:
             "holding",
         )
         if result is not None:
-            value = int.from_bytes(
+            return int.from_bytes(
                 result.registers[0].to_bytes(2, "little", signed=False),
                 "little",
                 signed=True,
             )
-            return value
         _LOGGER.error("Could not read get_cooling_setpoint")
         return None
 
@@ -1901,12 +1989,11 @@ class Device:
             self._unit_id, CTS602HoldingRegisters.air_flow_cool_vent, 1, "holding"
         )
         if result is not None:
-            value = int.from_bytes(
+            return int.from_bytes(
                 result.registers[0].to_bytes(2, "little", signed=False),
                 "little",
                 signed=False,
             )
-            return value
         _LOGGER.error("Could not read get_cooling_mode_ventilation_step")
         return None
 
@@ -1919,12 +2006,11 @@ class Device:
             "holding",
         )
         if result is not None:
-            value = int.from_bytes(
+            return int.from_bytes(
                 result.registers[0].to_bytes(2, "little", signed=False),
                 "little",
                 signed=False,
             )
-            return value
         _LOGGER.error("Could not read get_co2_ventilation_high_step")
         return None
 
@@ -1949,12 +2035,11 @@ class Device:
             self._unit_id, CTS602InputRegisters.hps_alarm_count, 1, "input"
         )
         if result is not None:
-            value = int.from_bytes(
+            return int.from_bytes(
                 result.registers[0].to_bytes(2, "little", signed=False),
                 "little",
                 signed=False,
             )
-            return value
         _LOGGER.error("Could not read get_hps_alarm_count")
         return None
 
@@ -1964,12 +2049,11 @@ class Device:
             self._unit_id, CTS602HoldingRegisters.hot_water_legio_type, 1, "holding"
         )
         if result is not None:
-            value = int.from_bytes(
+            return int.from_bytes(
                 result.registers[0].to_bytes(2, "little", signed=False),
                 "little",
                 signed=False,
             )
-            return value
         _LOGGER.error("Could not read get_legionella_day")
         return None
 
@@ -1979,12 +2063,11 @@ class Device:
             self._unit_id, CTS602HoldingRegisters.hps_param_season_mode, 1, "holding"
         )
         if result is not None:
-            value = int.from_bytes(
+            return int.from_bytes(
                 result.registers[0].to_bytes(2, "little", signed=False),
                 "little",
                 signed=False,
             )
-            return value
         _LOGGER.error("Could not read get_hps_season_mode")
         return None
 
@@ -1997,12 +2080,11 @@ class Device:
             "holding",
         )
         if result is not None:
-            value = int.from_bytes(
+            return int.from_bytes(
                 result.registers[0].to_bytes(2, "little", signed=False),
                 "little",
                 signed=False,
             )
-            return value
         _LOGGER.error("Could not read get_air_filter_alarm_interval")
         return None
 
@@ -2033,12 +2115,11 @@ class Device:
             "input",
         )
         if result is not None:
-            value = int.from_bytes(
+            return int.from_bytes(
                 result.registers[0].to_bytes(2, "little", signed=False),
                 "little",
                 signed=False,
             )
-            return value
         _LOGGER.error("Could not read get_days_since_air_filter_change")
         return None
 
@@ -2051,12 +2132,11 @@ class Device:
             "input",
         )
         if result is not None:
-            value = int.from_bytes(
+            return int.from_bytes(
                 result.registers[0].to_bytes(2, "little", signed=False),
                 "little",
                 signed=False,
             )
-            return value
         _LOGGER.error("Could not read get_days_to_air_filter_change")
         return None
 
@@ -2066,12 +2146,11 @@ class Device:
             self._unit_id, CTS602HoldingRegisters.air_flow_air_exch_mode, 1, "holding"
         )
         if result is not None:
-            value = int.from_bytes(
+            return int.from_bytes(
                 result.registers[0].to_bytes(2, "little", signed=False),
                 "little",
                 signed=True,
             )
-            return value
         _LOGGER.error("Could not read get_air_exchange_mode")
         return None
 
@@ -2081,12 +2160,11 @@ class Device:
             self._unit_id, CTS602InputRegisters.air_temp_is_summer, 1, "input"
         )
         if result is not None:
-            value = int.from_bytes(
+            return int.from_bytes(
                 result.registers[0].to_bytes(2, "little", signed=False),
                 "little",
                 signed=False,
             )
-            return value
         _LOGGER.error("Could not read get_summer_state")
         return None
 
@@ -2096,12 +2174,11 @@ class Device:
             self._unit_id, CTS602HoldingRegisters.control_vent_set, 1, "holding"
         )
         if result is not None:
-            value = int.from_bytes(
+            return int.from_bytes(
                 result.registers[0].to_bytes(2, "little", signed=False),
                 "little",
                 signed=False,
             )
-            return value
         _LOGGER.error("Could not read get_ventilation_step")
         return None
 
@@ -2111,12 +2188,11 @@ class Device:
             self._unit_id, CTS602HoldingRegisters.air_flow_inlet_min, 1, "holding"
         )
         if result is not None:
-            value = int.from_bytes(
+            return int.from_bytes(
                 result.registers[0].to_bytes(2, "little", signed=False),
                 "little",
                 signed=False,
             )
-            return value
         _LOGGER.error("Could not read get_min_supply_step")
         return None
 
@@ -2126,12 +2202,11 @@ class Device:
             self._unit_id, CTS602HoldingRegisters.air_flow_exhaust_min, 1, "holding"
         )
         if result is not None:
-            value = int.from_bytes(
+            return int.from_bytes(
                 result.registers[0].to_bytes(2, "little", signed=False),
                 "little",
                 signed=False,
             )
-            return value
         _LOGGER.error("Could not read get_min_return_step")
         return None
 
@@ -2141,12 +2216,11 @@ class Device:
             self._unit_id, CTS602HoldingRegisters.air_flow_exhaust_max, 1, "holding"
         )
         if result is not None:
-            value = int.from_bytes(
+            return int.from_bytes(
                 result.registers[0].to_bytes(2, "little", signed=False),
                 "little",
                 signed=False,
             )
-            return value
         _LOGGER.error("Could not read get_max_return_step")
         return None
 
@@ -2159,12 +2233,11 @@ class Device:
             "holding",
         )
         if result is not None:
-            value = int.from_bytes(
+            return int.from_bytes(
                 result.registers[0].to_bytes(2, "little", signed=False),
                 "little",
                 signed=False,
             )
-            return value
         _LOGGER.error("Could not read get_low_outdoor_temperature_ventilation_step")
         return None
 
@@ -2259,12 +2332,11 @@ class Device:
             self._unit_id, CTS602HoldingRegisters.hot_water_priority, 1, "holding"
         )
         if result is not None:
-            value = int.from_bytes(
+            return int.from_bytes(
                 result.registers[0].to_bytes(2, "little", signed=False),
                 "little",
                 signed=False,
             )
-            return value
         _LOGGER.error("Could not read get_compressor_priority")
         return None
 
@@ -2277,12 +2349,11 @@ class Device:
             "holding",
         )
         if result is not None:
-            value = int.from_bytes(
+            return int.from_bytes(
                 result.registers[0].to_bytes(2, "little", signed=False),
                 "little",
                 signed=False,
             )
-            return value
         _LOGGER.error("Could not read get_central_heat_supply_curve")
         return None
 
@@ -2292,12 +2363,11 @@ class Device:
             self._unit_id, CTS602HoldingRegisters.air_heat_delay, 1, "holding"
         )
         if result is not None:
-            value = int.from_bytes(
+            return int.from_bytes(
                 result.registers[0].to_bytes(2, "little", signed=False),
                 "little",
                 signed=False,
             )
-            return value
         _LOGGER.error("Could not read get_supply_heater_delay")
         return None
 
@@ -2307,12 +2377,11 @@ class Device:
             self._unit_id, CTS602InputRegisters.air_flow_vent_state, 1, "input"
         )
         if result is not None:
-            value = int.from_bytes(
+            return int.from_bytes(
                 result.registers[0].to_bytes(2, "little", signed=False),
                 "little",
                 signed=False,
             )
-            return value
         _LOGGER.error("Could not read get_ventilation_state")
         return None
 
@@ -2322,12 +2391,11 @@ class Device:
             self._unit_id, CTS602InputRegisters.control_state_display, 1, "input"
         )
         if result is not None:
-            value = int.from_bytes(
+            return int.from_bytes(
                 result.registers[0].to_bytes(2, "little", signed=False),
                 "little",
                 signed=False,
             )
-            return value
         _LOGGER.error("Could not read get_control_state")
         return None
 
@@ -2337,12 +2405,11 @@ class Device:
             self._unit_id, CTS602InputRegisters.hps_heat_pump_state, 1, "input"
         )
         if result is not None:
-            value = int.from_bytes(
+            return int.from_bytes(
                 result.registers[0].to_bytes(2, "little", signed=False),
                 "little",
                 signed=False,
             )
-            return value
         _LOGGER.error("Could not read get_hps_heat_pump_state")
         return None
 
@@ -2464,12 +2531,11 @@ class Device:
             self._unit_id, CTS602InputRegisters.hps_alarm_code1, 1, "input"
         )
         if result is not None:
-            value = int.from_bytes(
+            return int.from_bytes(
                 result.registers[0].to_bytes(2, "little", signed=False),
                 "little",
                 signed=False,
             )
-            return value
         _LOGGER.error("Could not read get_hps_alarm_1_code")
         return None
 
@@ -2479,12 +2545,11 @@ class Device:
             self._unit_id, CTS602InputRegisters.hps_alarm_code2, 1, "input"
         )
         if result is not None:
-            value = int.from_bytes(
+            return int.from_bytes(
                 result.registers[0].to_bytes(2, "little", signed=False),
                 "little",
                 signed=False,
             )
-            return value
         _LOGGER.error("Could not read get_hps_alarm_2_code")
         return None
 
@@ -2494,12 +2559,11 @@ class Device:
             self._unit_id, CTS602InputRegisters.hps_alarm_code3, 1, "input"
         )
         if result is not None:
-            value = int.from_bytes(
+            return int.from_bytes(
                 result.registers[0].to_bytes(2, "little", signed=False),
                 "little",
                 signed=False,
             )
-            return value
         _LOGGER.error("Could not read get_hps_alarm_3_code")
         return None
 
@@ -2523,7 +2587,7 @@ class Device:
     async def get_user_function_1_state(self) -> bool:
         """Get user function State."""
         result = await self._modbus.async_pb_call(
-            self._unit_id, CTS602InputRegisters.input_user_func, 1, "input"
+            self._unit_id, CTS602HoldingRegisters.output_user_func, 1, "holding"
         )
         if result is not None:
             value = int.from_bytes(
@@ -2540,7 +2604,7 @@ class Device:
     async def get_user_function_2_state(self) -> bool:
         """Get user function 2 State."""
         result = await self._modbus.async_pb_call(
-            self._unit_id, CTS602InputRegisters.input_user_func_2, 1, "input"
+            self._unit_id, CTS602HoldingRegisters.output_user_func_2, 1, "holding"
         )
         if result is not None:
             value = int.from_bytes(
@@ -2656,21 +2720,77 @@ class Device:
         _LOGGER.error("Could not read get_bypass_flap_state")
         return None
 
+    async def get_user_function_1_mode(self) -> int:
+        """Get user function 1 mode."""
+        result = await self._modbus.async_pb_call(
+            self._unit_id, CTS602HoldingRegisters.program_user_func_set, 1, "holding"
+        )
+        if result is not None:
+            return int.from_bytes(
+                result.registers[0].to_bytes(2, "little", signed=False),
+                "little",
+                signed=False,
+            )
+        _LOGGER.error("Could not read get_user_function_1_mode")
+        return None
+
+    async def get_user_function_2_mode(self) -> int:
+        """Get user function 2 mode."""
+        result = await self._modbus.async_pb_call(
+            self._unit_id, CTS602HoldingRegisters.program_user_2_func_set, 1, "holding"
+        )
+        if result is not None:
+            return int.from_bytes(
+                result.registers[0].to_bytes(2, "little", signed=False),
+                "little",
+                signed=False,
+            )
+        _LOGGER.error("Could not read get_user_function_2_mode")
+        return None
+
+    async def get_user_function_1_ventilation_step(self) -> int:
+        """Get user function 1 ventilation step."""
+        result = await self._modbus.async_pb_call(
+            self._unit_id, CTS602HoldingRegisters.program_user_vent_set, 1, "holding"
+        )
+        if result is not None:
+            return int.from_bytes(
+                result.registers[0].to_bytes(2, "little", signed=False),
+                "little",
+                signed=False,
+            )
+        _LOGGER.error("Could not read get_user_function_1_ventilation_step")
+        return None
+
+    async def get_user_function_2_ventilation_step(self) -> int:
+        """Get user function 2 ventilation step."""
+        result = await self._modbus.async_pb_call(
+            self._unit_id, CTS602HoldingRegisters.program_user_2_vent_set, 1, "holding"
+        )
+        if result is not None:
+            return int.from_bytes(
+                result.registers[0].to_bytes(2, "little", signed=False),
+                "little",
+                signed=False,
+            )
+        _LOGGER.error("Could not read get_user_function_2_ventilation_step")
+        return None
+
     async def get_time(self) -> datetime:
         """Get machine time."""
         result = await self._modbus.async_pb_call(
             self._unit_id, CTS602HoldingRegisters.time_second, 6, "holding"
         )
         if result is not None:
-            times = []
-            for i in range(6):
-                times.append(
-                    int.from_bytes(
-                        result.registers[i].to_bytes(2, "little", signed=False),
-                        "little",
-                        signed=False,
-                    )
+            times = [
+                int.from_bytes(
+                    x.to_bytes(2, "little", signed=False),
+                    "little",
+                    signed=False,
                 )
+                for x in result.registers
+            ]
+
             return datetime.datetime(
                 times[5],
                 times[4],
@@ -2679,18 +2799,19 @@ class Device:
                 times[1],
                 times[0],
             )
+
         _LOGGER.error("Could not read get_time")
         return None
 
     async def set_time(self, time: datetime.datetime) -> bool:
         """Set machine time."""
         times = []
-        times.append(int("%s" % (time.second)))
-        times.append(int("%s" % (time.minute)))
-        times.append(int("%s" % (time.hour)))
-        times.append(int("%s" % (time.day)))
-        times.append(int("%s" % (time.month)))
-        times.append(int("%s" % (time.year)))
+        times.append(int(f"{time.second}"))
+        times.append(int(f"{time.minute}"))
+        times.append(int(f"{time.hour}"))
+        times.append(int(f"{time.day}"))
+        times.append(int(f"{time.month}"))
+        times.append(int(f"{time.year}"))
 
         await self._modbus.async_pb_call(
             self._unit_id,
@@ -2702,10 +2823,58 @@ class Device:
 
     async def set_operation_mode(self, mode: int) -> bool:
         """Set operation mode."""
-        if mode in (1, 2, 3):
+        if mode in (0, 1, 2, 3):
             await self._modbus.async_pb_call(
                 self._unit_id,
                 CTS602HoldingRegisters.control_mode_set,
+                [mode],
+                "write_registers",
+            )
+            return True
+        return False
+
+    async def set_user_function_1_mode(self, mode: int) -> bool:
+        """Set user function 1 mode."""
+        if mode in (0, 1, 2, 3, 4, 5, 6):
+            await self._modbus.async_pb_call(
+                self._unit_id,
+                CTS602HoldingRegisters.program_user_func_set,
+                [mode],
+                "write_registers",
+            )
+            return True
+        return False
+
+    async def set_user_function_2_mode(self, mode: int) -> bool:
+        """Set user function 2mode."""
+        if mode in (0, 1, 2, 3, 4, 5, 6):
+            await self._modbus.async_pb_call(
+                self._unit_id,
+                CTS602HoldingRegisters.program_user_2_func_set,
+                [mode],
+                "write_registers",
+            )
+            return True
+        return False
+
+    async def set_user_function_1_ventilation_step(self, mode: int) -> bool:
+        """Set user function 1 ventilation step."""
+        if mode in (0, 1, 2, 3, 4):
+            await self._modbus.async_pb_call(
+                self._unit_id,
+                CTS602HoldingRegisters.program_user_vent_set,
+                [mode],
+                "write_registers",
+            )
+            return True
+        return False
+
+    async def set_user_function_2_ventilation_step(self, mode: int) -> bool:
+        """Set user function 2 ventilation step."""
+        if mode in (0, 1, 2, 3, 4):
+            await self._modbus.async_pb_call(
+                self._unit_id,
+                CTS602HoldingRegisters.program_user_2_vent_set,
                 [mode],
                 "write_registers",
             )
@@ -3569,6 +3738,72 @@ class Device:
                 "write_registers",
             )
 
+    async def set_user_function_1_time(self, value: float):
+        """Set time in user function 1 in m."""
+        if (value >= 15 and value <= 480) or value == 0:
+            await self._modbus.async_pb_call(
+                self._unit_id,
+                CTS602HoldingRegisters.program_user_time_set,
+                [value],
+                "write_registers",
+            )
+
+    async def set_user_function_2_time(self, value: float):
+        """Set time in user function 2 in m."""
+        if (value >= 15 and value <= 480) or value == 0:
+            await self._modbus.async_pb_call(
+                self._unit_id,
+                CTS602HoldingRegisters.program_user_2_time_set,
+                [value],
+                "write_registers",
+            )
+
+    async def set_user_function_1_temperature(self, value: float):
+        """Set user function 1 temperature."""
+        if value >= 5 and value <= 30:
+            await self._modbus.async_pb_call(
+                self._unit_id,
+                CTS602HoldingRegisters.program_user_temp_set,
+                [value],
+                "write_registers",
+            )
+
+    async def set_user_function_2_temperature(self, value: float):
+        """Set user function 2 temperature."""
+        if value >= 5 and value <= 30:
+            await self._modbus.async_pb_call(
+                self._unit_id,
+                CTS602HoldingRegisters.program_user_temp_set,
+                [value],
+                "write_registers",
+            )
+
+    async def set_user_function_1_offset(self, value: float):
+        """Set user function 1 offset."""
+        if value >= -10 and value <= 10:
+            output = int.from_bytes(
+                value.to_bytes(2, "little", signed=True), "little", signed=False
+            )
+            await self._modbus.async_pb_call(
+                self._unit_id,
+                CTS602HoldingRegisters.program_user_offs_set,
+                [output],
+                "write_registers",
+            )
+
+    async def set_user_function_2_offset(self, value: float):
+        """Set user function 2 offset."""
+        if value >= -10 and value <= 10:
+            output = int.from_bytes(
+                value.to_bytes(2, "little", signed=True), "little", signed=False
+            )
+            await self._modbus.async_pb_call(
+                self._unit_id,
+                CTS602HoldingRegisters.program_user_2_offs_set,
+                [output],
+                "write_registers",
+            )
+
     async def set_supply_heating_pid_time(self, value: float):
         """Set pid integration time."""
         if value >= 0 and value <= 25:
@@ -3581,7 +3816,7 @@ class Device:
 
     async def set_electric_water_heater_setpoint(self, value: float):
         """Set electric water heater temperature setpoint."""
-        if value >= 5 and value <= 85 or value == 0:
+        if (value >= 5 and value <= 85) or value == 0:
             value = int(value * 100)
             output = int.from_bytes(
                 value.to_bytes(2, "little", signed=True), "little", signed=False
@@ -3595,7 +3830,7 @@ class Device:
 
     async def set_compressor_water_heater_setpoint(self, value: float):
         """Set compressor water heater temperature setpoint."""
-        if value >= 5 and value <= 60 or value == 0:
+        if (value >= 5 and value <= 60) or value == 0:
             value = int(value * 100)
             output = int.from_bytes(
                 value.to_bytes(2, "little", signed=True), "little", signed=False
@@ -3609,7 +3844,7 @@ class Device:
 
     async def set_hps_water_heater_setpoint(self, value: float):
         """Set hps water heater temperature setpoint."""
-        if value >= 5 and value <= 70 or value == 0:
+        if (value >= 5 and value <= 70) or value == 0:
             value = int(value * 10)
             output = int.from_bytes(
                 value.to_bytes(2, "little", signed=True), "little", signed=False
@@ -3623,7 +3858,7 @@ class Device:
 
     async def set_hps_heating_setpoint_min(self, value: float):
         """Set hps water heater temperature setpoint."""
-        if value >= 0 and value <= 70 or value == 0:
+        if (value >= 0 and value <= 70) or value == 0:
             value = int(value * 10)
             output = int.from_bytes(
                 value.to_bytes(2, "little", signed=True), "little", signed=False

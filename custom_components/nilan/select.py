@@ -1,4 +1,5 @@
 """Platform for select integration."""
+
 from __future__ import annotations
 
 from collections import namedtuple
@@ -219,6 +220,42 @@ ATTRIBUTE_TO_SELECT = {
             None,
         )
     ],
+    "get_user_function_1_mode": [
+        Map(
+            "user_function_1_mode",
+            "set_user_function_1_mode",
+            EntityCategory.CONFIG,
+            ["0", "1", "2", "3", "4", "5"],
+            None,
+        )
+    ],
+    "get_user_function_2_mode": [
+        Map(
+            "user_function_2_mode",
+            "set_user_function_2_mode",
+            EntityCategory.CONFIG,
+            ["0", "1", "2", "3", "4", "5", "6"],
+            None,
+        )
+    ],
+    "get_user_function_1_ventilation_step": [
+        Map(
+            "user_selection_1_fan_speed_level",
+            "set_user_function_1_ventilation_step",
+            EntityCategory.CONFIG,
+            ["0", "1", "2", "3", "4"],
+            "mdi:fan",
+        )
+    ],
+    "get_user_function_2_ventilation_step": [
+        Map(
+            "user_selection_2_fan_speed_level",
+            "set_user_function_2_ventilation_step",
+            EntityCategory.CONFIG,
+            ["0", "1", "2", "3", "4"],
+            "mdi:fan",
+        )
+    ],
 }
 
 MapAlarm = namedtuple(
@@ -229,8 +266,8 @@ ATTRIBUTE_TO_ALARM_SELECT = {
     "alarm_reset": [
         MapAlarm(
             "get_alarm_1_code",
-            "get_alarm_1_code",
-            "get_alarm_1_code",
+            "get_alarm_2_code",
+            "get_alarm_3_code",
             "reset_alarm",
             "set_alarm_reset_code",
             "255",
